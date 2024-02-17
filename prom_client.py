@@ -21,7 +21,7 @@ yolo.set_output_path(YOLO_OUTPUT_PATH)
 # Custom Metric Collector
 class CustomCollector(Collector):
     def collect(self):
-        yield GaugeMetricFamily('number_of_completed_tasks', 'number_of_completed_tasks', value=file_count(YOLO_OUTPUT_PATH+yolo.current_dir))
+        yield GaugeMetricFamily('number_of_completed_tasks', 'number_of_completed_tasks', value=file_count(f"{YOLO_OUTPUT_PATH}/{yolo.current_dir}"))
         yield GaugeMetricFamily('yolo_predict_task_status', 'True == Done, False == Not yet', value=yolo.operation_status)
         # c = CounterMetricFamily('my_counter_total', 'Help text', labels=['foo'])
         # c.add_metric(['bar'], 1.7)
