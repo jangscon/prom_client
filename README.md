@@ -11,13 +11,13 @@ git clone https://github.com/jangscon/prom_client.git
 - The script takes two parameters: the path to the image for prediction and the path to save the prediction results.
 - Execute setup.sh with parameters as shown in the example below:
   ```bash
-  python3 setup.py "/INPUT_PATH" "/OUTPUT_PATH" PortNumber 
+  python3 setup.py --image_path "/IMAGE_PATH" --output_path "/OUTPUT_PATH" --port PortNumber 
   ```
 - After this command, Running prom_client.py will start the FastAPI application.
   ```bash
   python3 prom_client.py 
   ```
-  
+
 ## Testing
 ### get metrics
 - Communication is possible on port 8000. To retrieve metrics, execute the following command using curl on the client:

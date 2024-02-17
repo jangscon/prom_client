@@ -11,7 +11,7 @@ def install(package):
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--image_path", type=str, action="store")          
-parser.add_argument("--output_path", type=str, action="store_true")           
+parser.add_argument("--output_path", type=str, action="store")           
 parser.add_argument("--port",type=int, default=8000)
 args = parser.parse_args()
 
@@ -30,10 +30,10 @@ s.close()
 
 YOLO_INPUT_PATH = args.image_path
 YOLO_OUTPUT_PATH = args.output_path
-Port = args.Port
+Port = args.port
 
 with open("config.py","w") as f:
-    f.write(f'YOLO_INPUT_PATH = "{YOLO_INPUT_PATH}"')
-    f.write(f'YOLO_OUTPUT_PATH = "{YOLO_OUTPUT_PATH}"')
-    f.write(f'IP = "{IP}"')
-    f.write(f'Port = {Port}')
+    f.write(f'YOLO_INPUT_PATH = "{YOLO_INPUT_PATH}"\n')
+    f.write(f'YOLO_OUTPUT_PATH = "{YOLO_OUTPUT_PATH}"\n')
+    f.write(f'IP = "{IP}"\n')
+    f.write(f'Port = {Port}\n')
