@@ -19,6 +19,7 @@ yolo.set_output_path(YOLO_OUTPUT_PATH)
 total_output_image = 0
 
 def set_total_output_image():
+    global total_output_image
     total_output_image += file_count(f"{YOLO_OUTPUT_PATH}/{yolo.current_dir}")
     return total_output_image
 
