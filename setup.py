@@ -1,7 +1,7 @@
 import socket
 import argparse
 import pip
-
+import os
 
 def install(package):
     if hasattr(pip, 'main'):
