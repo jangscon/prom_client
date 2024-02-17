@@ -26,13 +26,13 @@ class YOLOJob:
     
     
     def switch_operation_status(self):
-        self.operation_status = not self.operation_status
+        self.operation_status += 1
     def get_image_list(self):
         return [ f"{self.input_path}/{i}" for i in os.listdir(self.input_path)[self.start_idx:self.end_idx]]
     
     def execute_yolo_predict(self) :
         dircheck = self.current_dir.split("t")
-        if len(dircheck) == 1 :
+        if dircheck[1] == '' :
             self.current_dir = "predict2"
         else:
             self.current_dir = f"predict{int(dircheck[1])+1}"
