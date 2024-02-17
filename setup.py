@@ -1,5 +1,12 @@
 import socket
 import argparse
+import pip
+
+def install(package):
+    if hasattr(pip, 'main'):
+        pip.main(['install', package])
+    else:
+        pip._internal.main(['install', package])
 
 
 parser = argparse.ArgumentParser()
@@ -7,6 +14,11 @@ parser.add_argument("--image_path", type=str, action="store")
 parser.add_argument("--output_path", type=str, action="store_true")           
 parser.add_argument("--port",type=int, default=8000)
 args = parser.parse_args()
+
+install("prometheus-client")
+install("uvicorn")
+install("fastapi")
+install("ultralytics")
 
 
 
