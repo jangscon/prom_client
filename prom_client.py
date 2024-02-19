@@ -59,7 +59,23 @@ async def send_notification(idxrange: str, background_tasks: BackgroundTasks):
     yolo.set_end_idx(end_idx)
 
     background_tasks.add_task(yolo.execute_yolo_predict)
-    return {"message": "YOLO image predict execute in the background"}
+    return {"message": "YOLO image predict execute in the background", }
+
+@app.post("/image_predict_post/{idxrange}")
+async def send_notification(idxrange: str, background_tasks: BackgroundTasks):
+    ##################################
+    #   idxrange example
+    #
+    #   1)"0-10" -> iamge[0:10]
+    #   2)"100-999" -> iamge[100:999]
+    #
+    ##################################
+
+    start_idx, end_idx = [int(idx) for idx in idxrange.split("-")]
+    yolo.set_start_idx(start_idx)
+    yolo.set_end_idx(end_idx)
+    yolo.execute_yolo_predict()
+    return {"message": "YOLO image predict Done"}
 
 # @app.post("/request")
 # async def request_job(item: Item):
