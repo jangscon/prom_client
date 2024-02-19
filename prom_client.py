@@ -42,6 +42,22 @@ app = FastAPI(debug=False)
 metrics_app = make_asgi_app(REGISTRY)
 app.mount("/metrics", metrics_app)
 
+@app.get("/image_predict_get/{idxrange}")
+async def send_notification(idxrange: str):
+    start_idx, end_idx = [int(idx) for idx in idxrange.split("-")]
+    yolo.set_start_idx(start_idx)
+    yolo.set_end_idx(end_idx)
+
+    yolo.execute_yolo_predict()
+    return {
+        "latency" : str(yolo.latency) ,
+        "operation_status " : str(yolo.operation_status) ,
+        "input_path " : str(yolo.input_path) ,
+        "output_path" : str(yolo.output_path) ,
+        "start_idx " : str(yolo.start_idx) ,
+        "end_idx " : str(yolo.end_idx) ,
+        "current_dir " : str(yolo.current_dir) 
+    }
 
 # POST - Task requests
 @app.post("/image_predict/{idxrange}")
@@ -62,7 +78,7 @@ async def send_notification(idxrange: str, background_tasks: BackgroundTasks):
     return {"message": "YOLO image predict execute in the background", }
 
 @app.post("/image_predict_post/{idxrange}")
-async def send_notification(idxrange: str, background_tasks: BackgroundTasks):
+async def send_notification(idxrange: str):
     ##################################
     #   idxrange example
     #
