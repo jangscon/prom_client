@@ -12,7 +12,7 @@ git clone https://github.com/jangscon/prom_client.git
 - If you don't enter a path, it is set to the current directory.
 - Execute setup.sh with parameters as shown in the example below:
   ```bash
-  python3 setup.py --yolo_image_path "/YOLO_IMAGE_PATH" --yolo_output_path "YOLO_OUTPUT_PATH" --ffmpeg_image_path "/FFMPEG_IMAGE_PATH" --ffmpeg_output_path "/FFMPEG_OUTPUT_PATH" --port PortNumber 
+  python3 setup.py --yolo_input_path "/YOLO_IMAGE_PATH" --yolo_output_path "YOLO_OUTPUT_PATH" --ffmpeg_input_path "/FFMPEG_IMAGE_PATH" --ffmpeg_output_path "/FFMPEG_OUTPUT_PATH" --port PortNumber 
   ```
 - After this command, Running prom_client.py will start the FastAPI application.
   ```bash
