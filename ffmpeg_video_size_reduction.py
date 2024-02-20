@@ -9,7 +9,6 @@ class FFMpegJob:
         self.output_path = None
         self.start_idx = None
         self.end_idx = None
-        self.input_list_path = None
 
     def set_input_path(self,input_path):
         self.input_path = input_path   
@@ -25,13 +24,13 @@ class FFMpegJob:
     def switch_operation_status(self):
         self.operation_status += 1
     def get_video_list(self, save_file="mylist.txt"):
-        return [ f"{self.input_path}/{i}" for i in os.listdir(self.input_path)[self.start_idx:self.end_idx]]
+        return os.listdir(self.input_path)[self.start_idx:self.end_idx]
         
-    def vid_resize(self, width, overwrite = False):
+    def vid_resize(self):
         stime = time.time()
-        vid_list = self.get_image_list()
+        vid_list = self.get_video_list()
         for vid in vid_list :
-            ffmpeg.input(input_file).output(output_file, vf='scale=640:480').run()
+            ffmpeg.input(f"{self.input_path}/{vid}").output(f"{self.output_path}/output_{vid}", vf='scale=640:480').run()
         self.switch_operation_status()
         etime = time.time()
         return f"{etime - stime:.5f}"
