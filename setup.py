@@ -21,12 +21,15 @@ install("prometheus-client")
 install("uvicorn")
 install("fastapi")
 install("ultralytics")
-
+install("ffmpeg-python")
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--image_path", type=str, action="store")          
-parser.add_argument("--output_path", type=str, action="store")           
+parser.add_argument("--yolo_input_path", type=str, default="/yolo_input")
+parser.add_argument("--yolo_output_path", type=str, default="/yolo_output")
+parser.add_argument("--ffmpeg_input_path", type=str, default="/ffmpeg_input")
+parser.add_argument("--ffmpeg_output_path", type=str, default="/ffmpeg_output")
 parser.add_argument("--port",type=int, default=8000)
+
 args = parser.parse_args()
 
 # IP
@@ -35,15 +38,20 @@ s.connect(("8.8.8.8", 80))
 IP = s.getsockname()[0]
 s.close()
 
-YOLO_INPUT_PATH = args.image_path
-YOLO_OUTPUT_PATH = args.output_path
+YOLO_INPUT_PATH = args.yolo_input_path
+YOLO_OUTPUT_PATH = args.yolo_output_path
+FFMPEG_INPUT_PATH = args.ffmpeg_input_path
+FFMPEG_OUTPUT_PATH = args.ffmpeg_output_path
 Port = args.port
 
 create_directory(YOLO_OUTPUT_PATH)
 create_directory(f"{YOLO_OUTPUT_PATH}/predict")
+create_directory(FFMPEG_OUTPUT_PATH)
 
 with open("config.py","w") as f:
     f.write(f'YOLO_INPUT_PATH = "{YOLO_INPUT_PATH}"\n')
     f.write(f'YOLO_OUTPUT_PATH = "{YOLO_OUTPUT_PATH}"\n')
+    f.write(f'FFMPEG_INPUT_PATH = "{FFMPEG_INPUT_PATH}"\n')
+    f.write(f'FFMPEG_OUTPUT_PATH = "{FFMPEG_OUTPUT_PATH}"\n')
     f.write(f'IP = "{IP}"\n')
     f.write(f'Port = {Port}\n')

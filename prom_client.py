@@ -1,7 +1,8 @@
-from config import YOLO_INPUT_PATH, YOLO_OUTPUT_PATH, IP, Port
+from config import YOLO_INPUT_PATH, YOLO_OUTPUT_PATH, FFMPEG_INPUT_PATH, FFMPEG_OUTPUT_PATH, IP, Port
 
 from yolo_image_predict import YOLOJob
 from check_result import file_count
+from ffmpeg_video_size_reduction import FFMpegJob
 
 import uvicorn
 from fastapi import FastAPI, BackgroundTasks
@@ -12,11 +13,18 @@ from prometheus_client.core import GaugeMetricFamily, CounterMetricFamily, REGIS
 from prometheus_client.registry import Collector
 
 
+
 yolo = YOLOJob()
 yolo.set_input_path(YOLO_INPUT_PATH)
 yolo.set_output_path(YOLO_OUTPUT_PATH)
 
 total_output_image = 0
+
+mpeg = FFMpegJob()
+mpeg.set_input_path(FFMPEG_INPUT_PATH)
+mpeg.set_output_path(FFMPEG_OUTPUT_PATH)
+
+
 
 def set_total_output_image():
     global total_output_image
@@ -42,60 +50,33 @@ app = FastAPI(debug=False)
 metrics_app = make_asgi_app(REGISTRY)
 app.mount("/metrics", metrics_app)
 
-@app.get("/image_predict_get/{idxrange}")
+
+
+@app.get("/video_resize/{idxrange}")
 async def send_notification(idxrange: str):
     start_idx, end_idx = [int(idx) for idx in idxrange.split("-")]
-    yolo.set_start_idx(start_idx)
-    yolo.set_end_idx(end_idx)
+    mpeg.set_start_idx(start_idx)
+    mpeg.set_end_idx(end_idx)
 
-    yolo.execute_yolo_predict()
+    results = mpeg.vid_resize()
     return {
-        "latency" : str(yolo.latency) ,
-        "operation_status " : str(yolo.operation_status) ,
-        "input_path " : str(yolo.input_path) ,
-        "output_path" : str(yolo.output_path) ,
-        "start_idx " : str(yolo.start_idx) ,
-        "end_idx " : str(yolo.end_idx) ,
-        "current_dir " : str(yolo.current_dir) 
+        "results" : results
     }
 
-# POST - Task requests
-@app.post("/image_predict/{idxrange}")
-async def send_notification(idxrange: str, background_tasks: BackgroundTasks):
-    ##################################
-    #   idxrange example
-    #
-    #   1)"0-10" -> iamge[0:10]
-    #   2)"100-999" -> iamge[100:999]
-    #
-    ##################################
 
-    start_idx, end_idx = [int(idx) for idx in idxrange.split("-")]
-    yolo.set_start_idx(start_idx)
-    yolo.set_end_idx(end_idx)
 
-    background_tasks.add_task(yolo.execute_yolo_predict)
-    return {"message": "YOLO image predict execute in the background", }
-
-@app.post("/image_predict_post/{idxrange}")
+@app.get("/image_predict/{idxrange}")
 async def send_notification(idxrange: str):
-    ##################################
-    #   idxrange example
-    #
-    #   1)"0-10" -> iamge[0:10]
-    #   2)"100-999" -> iamge[100:999]
-    #
-    ##################################
-
     start_idx, end_idx = [int(idx) for idx in idxrange.split("-")]
     yolo.set_start_idx(start_idx)
     yolo.set_end_idx(end_idx)
-    yolo.execute_yolo_predict()
-    return {"message": "YOLO image predict Done"}
 
-# @app.post("/request")
-# async def request_job(item: Item):
-#     return JSONResponse(content={"message": "Image processing started"}, status_code=200)
+    results = yolo.execute_yolo_predict()
+    return {
+        "results" : results
+    }
+
+
 
 
 if __name__ == "__main__":

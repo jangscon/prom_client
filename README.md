@@ -8,10 +8,11 @@ git clone https://github.com/jangscon/prom_client.git
 ```
 
 ### 2. Run setup.py:
-- The script takes two parameters: the path to the image for prediction and the path to save the prediction results.
+- The script takes four parameters: the path to the image for prediction, the path to save the prediction results, the path to the video for resizing, and the path to save the results.
+- If you don't enter a path, it is set to the current directory.
 - Execute setup.sh with parameters as shown in the example below:
   ```bash
-  python3 setup.py --image_path "/IMAGE_PATH" --output_path "/OUTPUT_PATH" --port PortNumber 
+  python3 setup.py --yolo_image_path "/YOLO_IMAGE_PATH" --yolo_output_path "YOLO_OUTPUT_PATH" --ffmpeg_image_path "/FFMPEG_IMAGE_PATH" --ffmpeg_output_path "/FFMPEG_OUTPUT_PATH" --port PortNumber 
   ```
 - After this command, Running prom_client.py will start the FastAPI application.
   ```bash
@@ -30,5 +31,10 @@ curl -o test.txt "http://[ServerIP]:8000/metrics/"
 - To send a request to the server, execute the following command:
 -   This command instructs the server to perform prediction tasks for images numbered 0 to 29.
  ```bash
-curl -X POST "http://[ServerIP]:8000/image_predict/0-30"
+curl -X GET "http://[ServerIP]:8000/image_predict/0-30"
+```
+
+- This command instructs the server to perform a size reduction operation on videos 0 through 29.
+```bash
+curl -X GET "http://[ServerIP]:8000/video_resize/0-30"
 ```
