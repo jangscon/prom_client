@@ -12,6 +12,7 @@ from prometheus_client import make_asgi_app
 from prometheus_client.core import GaugeMetricFamily, CounterMetricFamily, REGISTRY
 from prometheus_client.registry import Collector
 
+from utils import count_files_in_directory
 
 
 yolo = YOLOJob()
@@ -50,7 +51,13 @@ app = FastAPI(debug=False)
 metrics_app = make_asgi_app(REGISTRY)
 app.mount("/metrics", metrics_app)
 
-
+@app.get("/initdevice/{job_type}}")
+async def send_notification(job_type: str):
+    if job_type == "yolo":
+        return {"result" : count_files_in_directory(YOLO_INPUT_PATH)}
+    elif job_type == "ffmpeg":
+        return {"result" : count_files_in_directory(FFMPEG_INPUT_PATH)}
+    else : return {"result" : 0}
 
 @app.get("/video_resize/{idxrange}")
 async def send_notification(idxrange: str):
@@ -58,9 +65,9 @@ async def send_notification(idxrange: str):
     mpeg.set_start_idx(start_idx)
     mpeg.set_end_idx(end_idx)
 
-    results = mpeg.vid_resize()
+    result = mpeg.vid_resize()
     return {
-        "results" : results
+        "result" : result
     }
 
 
@@ -71,9 +78,9 @@ async def send_notification(idxrange: str):
     yolo.set_start_idx(start_idx)
     yolo.set_end_idx(end_idx)
 
-    results = yolo.execute_yolo_predict()
+    result = yolo.execute_yolo_predict()
     return {
-        "results" : results
+        "result" : result
     }
 
 

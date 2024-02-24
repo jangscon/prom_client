@@ -1,5 +1,4 @@
 import ffmpeg
-import time
 import os
 
 class FFMpegJob:
@@ -27,13 +26,14 @@ class FFMpegJob:
         return os.listdir(self.input_path)[self.start_idx:self.end_idx]
         
     def vid_resize(self):
-        stime = time.time()
-        vid_list = self.get_video_list()
-        for vid in vid_list :
-            ffmpeg.input(f"{self.input_path}/{vid}").output(f"{self.output_path}/output_{vid}", vf='scale=640:480').run()
-        self.switch_operation_status()
-        etime = time.time()
-        return f"{etime - stime:.5f}"
+        try:
+            vid_list = self.get_video_list()
+            for vid in vid_list :
+                ffmpeg.input(f"{self.input_path}/{vid}").output(f"{self.output_path}/output_{vid}", vf='scale=640:480').run()
+            self.switch_operation_status()
+            return True
+        except Exception as e:
+            return False
 
 
     

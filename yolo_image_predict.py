@@ -1,6 +1,4 @@
-import time
 from ultralytics import YOLO
-from PIL import Image
 import os
 
 class YOLOJob:
@@ -30,17 +28,18 @@ class YOLOJob:
         return [ f"{self.input_path}/{i}" for i in os.listdir(self.input_path)[self.start_idx:self.end_idx]]
     
     def execute_yolo_predict(self) :
-        stime = time.time()
-        dircheck = self.current_dir.split("t")
-        if dircheck[1] == '' :
-            self.current_dir = "predict2"
-        else:
-            self.current_dir = f"predict{int(dircheck[1])+1}"
-        model = YOLO("yolov8n.pt") 
-        model.predict(source=self.get_image_list(),project=self.output_path, save=True)
-        self.switch_operation_status()
-        etime = time.time()
-        return f"{etime - stime:.5f}"
+        try:
+            dircheck = self.current_dir.split("t")
+            if dircheck[1] == '' :
+                self.current_dir = "predict2"
+            else:
+                self.current_dir = f"predict{int(dircheck[1])+1}"
+            model = YOLO("yolov8n.pt") 
+            model.predict(source=self.get_image_list(),project=self.output_path, save=True)
+            self.switch_operation_status()
+            return True
+        except Exception as e:
+            return False
 
 
 

@@ -1,6 +1,11 @@
 # README.md
 
 ## Environment Setup
+### Requirement
+```
+sudo apt update
+sudo apt install ffmpeg
+```
 
 ### 1. Clone the repository:
 ```
