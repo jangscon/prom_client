@@ -1,6 +1,5 @@
 from config import YOLO_INPUT_PATH, YOLO_OUTPUT_PATH, FFMPEG_INPUT_PATH, FFMPEG_OUTPUT_PATH, IP, Port, IPERF3_IP, IPERF3_Port, BANDWIDTH, MEM, CPU
 from yolo_image_predict import YOLOJob
-from check_result import file_count
 from ffmpeg_video_size_reduction import FFMpegJob
 
 import uvicorn
@@ -24,15 +23,15 @@ mpeg.set_input_path(FFMPEG_INPUT_PATH)
 mpeg.set_output_path(FFMPEG_OUTPUT_PATH)
 
 
-def set_total_output_image():
-    global total_output_image
-    total_output_image += file_count(f"{YOLO_OUTPUT_PATH}/{yolo.current_dir}")
-    return total_output_image
+# def set_total_output_image():
+#     global total_output_image
+#     total_output_image += file_count(f"{YOLO_OUTPUT_PATH}/{yolo.current_dir}")
+#     return total_output_image
 
 # Custom Metric Collector
 class CustomCollector(Collector):
     def collect(self):
-        yield GaugeMetricFamily('number_of_completed_tasks', 'number_of_completed_tasks', value=set_total_output_image())
+        # yield GaugeMetricFamily('number_of_completed_tasks', 'number_of_completed_tasks', value=set_total_output_image())
         yield GaugeMetricFamily('yolo_predict_task_status', 'True == Done, False == Not yet', value=yolo.operation_status)
         # c = CounterMetricFamily('my_counter_total', 'Help text', labels=['foo'])
         # c.add_metric(['bar'], 1.7)
