@@ -2,6 +2,7 @@ import socket
 import argparse
 import pip
 import os
+from computing_measure import get_available_ram, get_cpu_utility, get_network_bandwidth
 
 def install(package):
     if hasattr(pip, 'main'):
@@ -22,6 +23,7 @@ install("uvicorn")
 install("fastapi")
 install("ultralytics")
 install("ffmpeg-python")
+install("iperf3")
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--yolo_input_path", type=str, default="/yolo_input")
@@ -48,10 +50,21 @@ create_directory(YOLO_OUTPUT_PATH)
 create_directory(f"{YOLO_OUTPUT_PATH}/predict")
 create_directory(FFMPEG_OUTPUT_PATH)
 
+bandwidth = get_network_bandwidth("155.230.36.27", 5201)
+mem = get_available_ram()
+cpu = get_cpu_utility() 
+
+
+
 with open("config.py","w") as f:
     f.write(f'YOLO_INPUT_PATH = "{YOLO_INPUT_PATH}"\n')
     f.write(f'YOLO_OUTPUT_PATH = "{YOLO_OUTPUT_PATH}"\n')
     f.write(f'FFMPEG_INPUT_PATH = "{FFMPEG_INPUT_PATH}"\n')
     f.write(f'FFMPEG_OUTPUT_PATH = "{FFMPEG_OUTPUT_PATH}"\n')
+    f.write(f'BANDWIDTH = "{bandwidth}"\n')
+    f.write(f'MEM = "{mem}"\n')
+    f.write(f'CPU = "{cpu}"\n')
     f.write(f'IP = "{IP}"\n')
     f.write(f'Port = {Port}\n')
+    f.write(f'IPERF3_IP = "155.230.36.27"\n')
+    f.write(f'IPERF3_Port = 5201\n')

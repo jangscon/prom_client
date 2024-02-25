@@ -1,5 +1,4 @@
-from config import YOLO_INPUT_PATH, YOLO_OUTPUT_PATH, FFMPEG_INPUT_PATH, FFMPEG_OUTPUT_PATH, IP, Port
-
+from config import YOLO_INPUT_PATH, YOLO_OUTPUT_PATH, FFMPEG_INPUT_PATH, FFMPEG_OUTPUT_PATH, IP, Port, IPERF3_IP, IPERF3_Port, BANDWIDTH, MEM, CPU
 from yolo_image_predict import YOLOJob
 from check_result import file_count
 from ffmpeg_video_size_reduction import FFMpegJob
@@ -12,8 +11,7 @@ from prometheus_client import make_asgi_app
 from prometheus_client.core import GaugeMetricFamily, CounterMetricFamily, REGISTRY
 from prometheus_client.registry import Collector
 
-from utils import count_files_in_directory
-
+from computing_measure import get_network_bandwidth, get_cpu_utility, get_available_ram
 
 yolo = YOLOJob()
 yolo.set_input_path(YOLO_INPUT_PATH)
@@ -24,7 +22,6 @@ total_output_image = 0
 mpeg = FFMpegJob()
 mpeg.set_input_path(FFMPEG_INPUT_PATH)
 mpeg.set_output_path(FFMPEG_OUTPUT_PATH)
-
 
 
 def set_total_output_image():
@@ -51,13 +48,16 @@ app = FastAPI(debug=False)
 metrics_app = make_asgi_app(REGISTRY)
 app.mount("/metrics", metrics_app)
 
-@app.get("/initdevice/{job_type}}")
-async def send_notification(job_type: str):
-    if job_type == "yolo":
-        return {"result" : count_files_in_directory(YOLO_INPUT_PATH)}
-    elif job_type == "ffmpeg":
-        return {"result" : count_files_in_directory(FFMPEG_INPUT_PATH)}
-    else : return {"result" : 0}
+@app.get("/update_computing_measure")
+async def send_notification():
+    bandwidth = get_network_bandwidth(IPERF3_IP, IPERF3_Port)
+    RAM = get_available_ram()
+    cpu = get_cpu_utility()
+    return {"network_latency": bandwidth, "cpu" : cpu, "memory" : RAM}
+
+@app.get("/computing_measure")
+async def send_notification():
+    return {"network_latency": BANDWIDTH, "cpu" : CPU, "memory" : MEM}
 
 @app.get("/video_resize/{idxrange}")
 async def send_notification(idxrange: str):

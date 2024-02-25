@@ -8,12 +8,4 @@ def count_files_in_directory(directory):
         return len(files)
     except Exception as e:
         print(f"Error counting files in directory {directory}: {e}")
-        return None
-
-
-
-
-
-
-
-
+        return 0

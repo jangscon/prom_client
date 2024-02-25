@@ -4,7 +4,9 @@
 ### Requirement
 ```
 sudo apt update
-sudo apt install ffmpeg
+sudo apt-get install ffmpeg
+sudo apt-get install iperf3
+
 ```
 
 ### 1. Clone the repository:
