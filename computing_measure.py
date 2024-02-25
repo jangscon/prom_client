@@ -11,7 +11,7 @@ def get_network_bandwidth(serverip, port):
         client.server_hostname = serverip
         client.port = port
         result = client.run()
-        returnv = result.sent_Mbps
+        returnv = result.sent_bps
         return returnv
     except Exception as e:
         return 0
@@ -22,7 +22,7 @@ def get_available_ram():
         # psutil 라이브러리를 사용하여 가용 RAM 크기를 가져옴
         available_ram = psutil.virtual_memory().available
         # 가용 RAM 크기를 메가바이트로 변환하여 반환
-        return available_ram / (1024 ** 2)
+        return available_ram
     except Exception as e:
         return 0
 
