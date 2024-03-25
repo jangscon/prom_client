@@ -1,4 +1,4 @@
-from config import YOLO_INPUT_PATH, YOLO_OUTPUT_PATH, FFMPEG_INPUT_PATH, FFMPEG_OUTPUT_PATH, IP, Port, IPERF3_IP, IPERF3_Port, BANDWIDTH, MEM, CPU
+from config import YOLO_INPUT_PATH, YOLO_OUTPUT_PATH, FFMPEG_INPUT_PATH, FFMPEG_OUTPUT_PATH, IP, Port, IPERF3_IP, IPERF3_Port, BANDWIDTH, MEM
 from yolo_image_predict import YOLOJob
 from ffmpeg_video_size_reduction import FFMpegJob
 
@@ -33,6 +33,8 @@ class CustomCollector(Collector):
     def collect(self):
         # yield GaugeMetricFamily('number_of_completed_tasks', 'number_of_completed_tasks', value=set_total_output_image())
         yield GaugeMetricFamily('yolo_predict_task_status', 'True == Done, False == Not yet', value=yolo.operation_status)
+        yield GaugeMetricFamily('network_bandwidth','network_bandwidth',value=get_network_bandwidth(IPERF3_IP, IPERF3_Port))
+        yield GaugeMetricFamily('available_ram','available_ram',value=get_available_ram())
         # c = CounterMetricFamily('my_counter_total', 'Help text', labels=['foo'])
         # c.add_metric(['bar'], 1.7)
         # c.add_metric(['baz'], 3.8)
@@ -47,16 +49,16 @@ app = FastAPI(debug=False)
 metrics_app = make_asgi_app(REGISTRY)
 app.mount("/metrics", metrics_app)
 
-@app.get("/update_computing_measure")
-async def send_notification():
-    bandwidth = get_network_bandwidth(IPERF3_IP, IPERF3_Port)
-    RAM = get_available_ram()
-    cpu = get_cpu_utility()
-    return {"network_latency": bandwidth, "cpu" : cpu, "memory" : RAM}
 
 @app.get("/computing_measure")
 async def send_notification():
-    return {"network_latency": BANDWIDTH, "cpu" : CPU, "memory" : MEM}
+    bandwidth = get_network_bandwidth(IPERF3_IP, IPERF3_Port)
+    RAM = get_available_ram()
+    return {"network_latency": bandwidth, "memory" : RAM}
+
+#@app.get("/computing_measure")
+# async def send_notification():
+#     return {"network_latency": BANDWIDTH, "cpu" : CPU, "memory" : MEM}
 
 @app.get("/video_resize/{idxrange}")
 async def send_notification(idxrange: str):

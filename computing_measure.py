@@ -2,7 +2,7 @@ import iperf3
 import psutil
 import time
 import platform
-import cpuinfo 
+import cpuinfo
 
 def get_network_bandwidth(serverip, port):
     try:
@@ -11,7 +11,7 @@ def get_network_bandwidth(serverip, port):
         client.server_hostname = serverip
         client.port = port
         result = client.run()
-        returnv = result.sent_bps
+        returnv = result.sent_Mbps
         return returnv
     except Exception as e:
         return 0
