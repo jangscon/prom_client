@@ -29,25 +29,25 @@ mpeg.set_output_path(FFMPEG_OUTPUT_PATH)
 #     return total_output_image
 
 # Custom Metric Collector
-class CustomCollector(Collector):
-    def collect(self):
-        # yield GaugeMetricFamily('number_of_completed_tasks', 'number_of_completed_tasks', value=set_total_output_image())
-        yield GaugeMetricFamily('yolo_predict_task_status', 'True == Done, False == Not yet', value=yolo.operation_status)
-        yield GaugeMetricFamily('network_bandwidth','network_bandwidth',value=get_network_bandwidth(IPERF3_IP, IPERF3_Port))
-        yield GaugeMetricFamily('available_ram','available_ram',value=get_available_ram())
-        # c = CounterMetricFamily('my_counter_total', 'Help text', labels=['foo'])
-        # c.add_metric(['bar'], 1.7)
-        # c.add_metric(['baz'], 3.8)
-        # yield c
-REGISTRY.register(CustomCollector())
+#class CustomCollector(Collector):
+#    def collect(self):
+#        # yield GaugeMetricFamily('number_of_completed_tasks', 'number_of_completed_tasks', value=set_total_output_image())
+#        yield GaugeMetricFamily('yolo_predict_task_status', 'True == Done, False == Not yet', value=yolo.operation_status)
+#        yield GaugeMetricFamily('network_bandwidth','network_bandwidth',value=get_network_bandwidth(IPERF3_IP, IPERF3_Port))
+#        yield GaugeMetricFamily('available_ram','available_ram',value=get_available_ram())
+#        # c = CounterMetricFamily('my_counter_total', 'Help text', labels=['foo'])
+#        # c.add_metric(['bar'], 1.7)
+#        # c.add_metric(['baz'], 3.8)
+#        # yield c
+#REGISTRY.register(CustomCollector())
 
 
 # GET - metric exporter
 # Create app
 app = FastAPI(debug=False)
 # Add prometheus asgi middleware to route /metrics requests
-metrics_app = make_asgi_app(REGISTRY)
-app.mount("/metrics", metrics_app)
+#metrics_app = make_asgi_app(REGISTRY)
+#app.mount("/metrics", metrics_app)
 
 
 @app.get("/computing_measure")
