@@ -1,7 +1,7 @@
 from ultralytics import YOLO
 import os
 from utils import count_files_in_directory
-import time
+import time 
 
 class YOLOJob:
     def __init__(self):
@@ -15,7 +15,7 @@ class YOLOJob:
 
     def set_input_path(self,input_path):
         self.input_path = input_path 
-        self.dir_list = count_files_in_directory(input_path)
+        self.dir_list = int(count_files_in_directory(input_path))
     def set_output_path(self,output_path):
         self.output_path = output_path    
         self.current_dir = "predict"
@@ -38,7 +38,7 @@ class YOLOJob:
             else:
                 self.current_dir = f"predict{int(dircheck[1])+1}"
             model = YOLO("yolov8n.pt") 
-            if self.start_idx > self.current_dir or self.end_idx > self.current_dir:
+            if self.start_idx > self.dir_list or self.end_idx > self.dir_list:
                 sidx = 0
                 eidx = self.end_idx - self.start_idx
                 model.predict(source=self.get_image_list(sidx,eidx),project=self.output_path, save=True)
@@ -47,8 +47,5 @@ class YOLOJob:
             self.switch_operation_status()
             return time.time() - start
         except Exception as e:
-            return time.time() - start 
-
-
-
-    
+            print(e)
+            return time.time() - start
