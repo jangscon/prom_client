@@ -77,7 +77,7 @@ async def send_notification(idxrange: str):
 @app.get("/image_predict/{idxrange}")
 async def send_notification(idxrange: str):
     start_idx, end_idx = [int(idx) for idx in idxrange.split("-")]
-    size = yolo.end_idx - yolo.start_idx
+    size = end_idx - start_idx
     size_div = size // 100
     size_mod = size % 100
 
