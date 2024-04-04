@@ -11,6 +11,7 @@ from prometheus_client.core import GaugeMetricFamily, CounterMetricFamily, REGIS
 from prometheus_client.registry import Collector
 
 from computing_measure import get_network_bandwidth, get_cpu_utility, get_available_ram
+import time
 
 yolo = YOLOJob()
 yolo.set_input_path(YOLO_INPUT_PATH)
@@ -76,12 +77,23 @@ async def send_notification(idxrange: str):
 @app.get("/image_predict/{idxrange}")
 async def send_notification(idxrange: str):
     start_idx, end_idx = [int(idx) for idx in idxrange.split("-")]
+    size = yolo.end_idx - yolo.start_idx
+    size_div = size // 100
+    size_mod = size % 100
+
+    stime = time.time()
+    for _ in range(size_div) :
+        yolo.set_start_idx(start_idx)
+        start_idx += 100
+        yolo.set_end_idx(start_idx)
+        e, result = yolo.execute_yolo_predict()
+        print(e)
     yolo.set_start_idx(start_idx)
     yolo.set_end_idx(end_idx)
-
-    result = yolo.execute_yolo_predict()
+    e, result = yolo.execute_yolo_predict()
+    print(e)
     return {
-        "result" : result
+        "result" : time.time() - stime
     }
 
 

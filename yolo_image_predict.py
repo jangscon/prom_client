@@ -38,14 +38,8 @@ class YOLOJob:
             else:
                 self.current_dir = f"predict{int(dircheck[1])+1}"
             model = YOLO("yolov8n.pt") 
-            if self.start_idx > self.dir_list or self.end_idx > self.dir_list:
-                sidx = 0
-                eidx = self.end_idx - self.start_idx
-                model.predict(source=self.get_image_list(sidx,eidx),project=self.output_path, save=True)
-            else : 
-                model.predict(source=self.get_image_list(self.start_idx, self.end_idx),project=self.output_path, save=True)
+            model.predict(source=self.get_image_list(self.start_idx, self.end_idx),project=self.output_path, save=True)
             self.switch_operation_status()
-            return time.time() - start
+            return None, time.time() - start
         except Exception as e:
-            print(e)
-            return time.time() - start
+            return e, time.time() - start
