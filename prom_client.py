@@ -1,4 +1,4 @@
-from config import YOLO_INPUT_PATH, YOLO_OUTPUT_PATH, FFMPEG_INPUT_PATH, FFMPEG_OUTPUT_PATH, IP, Port, IPERF3_IP, IPERF3_Port, BANDWIDTH, MEM
+from config import YOLO_INPUT_PATH, YOLO_OUTPUT_PATH, FFMPEG_INPUT_PATH, FFMPEG_OUTPUT_PATH, IP, Port, IPERF3_IP, IPERF3_Port, BANDWIDTH, MEM, PROCESS_IMAGE
 from yolo_image_predict import YOLOJob
 from ffmpeg_video_size_reduction import FFMpegJob
 
@@ -78,20 +78,21 @@ async def send_notification(idxrange: str):
 async def send_notification(idxrange: str):
     start_idx, end_idx = [int(idx) for idx in idxrange.split("-")]
     size = end_idx - start_idx
-    size_div = size // 100
-    size_mod = size % 100
+    size_div = size // PROCESS_IMAGE
+    size_mod = size % PROCESS_IMAGE
 
     stime = time.time()
     for _ in range(size_div) :
         yolo.set_start_idx(start_idx)
-        start_idx += 100
+        start_idx += PROCESS_IMAGE
         yolo.set_end_idx(start_idx)
         e, result = yolo.execute_yolo_predict()
         print(e)
-    yolo.set_start_idx(start_idx)
-    yolo.set_end_idx(end_idx)
-    e, result = yolo.execute_yolo_predict()
-    print(e)
+    if size_mod != 0 :
+        yolo.set_start_idx(start_idx)
+        yolo.set_end_idx(end_idx)
+        e, result = yolo.execute_yolo_predict()
+        print(e)
     return {
         "result" : time.time() - stime
     }
