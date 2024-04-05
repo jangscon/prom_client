@@ -83,6 +83,8 @@ async def send_notification(idxrange: str):
 
     stime = time.time()
     for _ in range(size_div) :
+        if start_idx + PROCESS_IMAGE > 9000 : 
+            start_idx = 0    
         yolo.set_start_idx(start_idx)
         start_idx += PROCESS_IMAGE
         yolo.set_end_idx(start_idx)
