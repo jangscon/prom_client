@@ -195,6 +195,7 @@ async def send_notification(idxrange: str):
 
     stop_event.set()
     monitor_thread.join()
+    plot_resources(cpu_usages, memory_usages, disk_usages, network_send_packets, network_recv_packets)
     return{
         "elapsed_time" : float(etime - stime),
         "compute_time" : float(0)
