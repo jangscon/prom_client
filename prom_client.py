@@ -1,6 +1,6 @@
 from config import YOLO_INPUT_PATH, YOLO_OUTPUT_PATH, FFMPEG_INPUT_PATH, FFMPEG_OUTPUT_PATH, IP, Port, IPERF3_IP, IPERF3_Port, PROCESS_IMAGE
 #from yolo_image_predict import YOLOJob
-from yolo_test import YOLOJob
+from yolo_image_predict import YOLOJob
 from ffmpeg_video_size_reduction import FFMpegJob
 
 import uvicorn
