@@ -25,6 +25,8 @@ install("fastapi")
 install("ultralytics")
 install("ffmpeg-python")
 install("iperf3")
+install("paramiko")
+install("scp")
 
 subprocess.Popen(['sudo', 'apt-get', 'install', "iperf3"])
 

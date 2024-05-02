@@ -38,8 +38,16 @@ class YOLOJob:
             else:
                 self.current_dir = f"predict{int(dircheck[1])+1}"
             model = YOLO("yolov8n.pt") 
-            model.predict(source=self.get_image_list(self.start_idx, self.end_idx),project=self.output_path, save=True)
+            results = model.predict(source=self.get_image_list(self.start_idx, self.end_idx),stream=True)
+            for result in results:
+                for box in result.boxes:
+                    class_id = result.names[box.cls[0].item()]
+                    cords = box.xyxy[0].tolist()
+                    cords = [round(x) for x in cords]
+                    conf = round(box.conf[0].item(), 2)
+                    print("Object type:", class_id, " | Coordinates:", cords, " | Probability:", conf)
+                print("---")
             self.switch_operation_status()
-            return None, time.time() - start
+            return time.time() - start, None
         except Exception as e:
-            return e, time.time() - start
+            return time.time() - start, e

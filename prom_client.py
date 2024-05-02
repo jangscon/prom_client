@@ -1,5 +1,6 @@
-from config import YOLO_INPUT_PATH, YOLO_OUTPUT_PATH, FFMPEG_INPUT_PATH, FFMPEG_OUTPUT_PATH, IP, Port, IPERF3_IP, IPERF3_Port, BANDWIDTH, MEM, PROCESS_IMAGE
-from yolo_image_predict import YOLOJob
+from config import YOLO_INPUT_PATH, YOLO_OUTPUT_PATH, FFMPEG_INPUT_PATH, FFMPEG_OUTPUT_PATH, IP, Port, IPERF3_IP, IPERF3_Port, PROCESS_IMAGE
+#from yolo_image_predict import YOLOJob
+from yolo_test import YOLOJob
 from ffmpeg_video_size_reduction import FFMpegJob
 
 import uvicorn
@@ -12,6 +13,16 @@ from prometheus_client.registry import Collector
 
 from computing_measure import get_network_bandwidth, get_cpu_utility, get_available_ram
 import time
+import datetime
+import psutil
+import matplotlib.pyplot as plt
+import threading
+
+cpu_usages = []
+memory_usages = []
+disk_usages = []
+network_send_packets = []
+network_recv_packets = []
 
 yolo = YOLOJob()
 yolo.set_input_path(YOLO_INPUT_PATH)
@@ -72,30 +83,122 @@ async def send_notification(idxrange: str):
         "result" : result
     }
 
+def image_predict_func(idxrange) :
+    start_idx, end_idx = [int(idx) for idx in idxrange.split("-")]
+    size = end_idx - start_idx
+    compute_time = 0
+
+    size_div = size // PROCESS_IMAGE
+    size_mod = size % PROCESS_IMAGE
+
+    for _ in range(size_div) :
+        if start_idx + PROCESS_IMAGE  > 9000 :
+            start_idx = 0
+        yolo.set_start_idx(start_idx)
+        start_idx += PROCESS_IMAGE
+        yolo.set_end_idx(start_idx)
+        comp_time, e = yolo.execute_yolo_predict()
+        if e is not None :
+            print(e)
+        else :
+            compute_time = compute_time + comp_time
+
+    if start_idx + size_mod > 9000 :
+        start_idx = 0
+    if size_mod != 0 :
+        yolo.set_start_idx(start_idx)
+        yolo.set_end_idx(start_idx + size_mod)
+        comp_time, e = yolo.execute_yolo_predict()
+        if e is not None :
+            print(e)
+        else :
+            compute_time = compute_time + comp_time
+
+def monitor_resources(stop_event):
+    old_net_io = psutil.net_io_counters()
+    while not stop_event.is_set():
+        cpu_usage = psutil.cpu_percent(interval=1)
+        memory_usage = psutil.virtual_memory().percent
+        disk_usage = psutil.disk_usage('/').percent
+        new_net_io = psutil.net_io_counters()
+        send_packets = new_net_io.packets_sent - old_net_io.packets_sent
+        recv_packets = new_net_io.packets_recv - old_net_io.packets_recv
+        old_net_io = new_net_io
+
+        cpu_usages.append(cpu_usage)
+        memory_usages.append(memory_usage)
+        disk_usages.append(disk_usage)
+        network_send_packets.append(send_packets)
+        network_recv_packets.append(recv_packets)
+
+        print(f"CPU: {cpu_usage}%, Memory: {memory_usage}%, Disk: {disk_usage}%, Packets Sent: {send_packets}, Packets Received: {recv_packets}")
+
+    print("Monitoring stopped.")
+
+def run_function_in_thread(function, *args, **kwargs):
+    func_thread = threading.Thread(target=function, args=args, kwargs=kwargs)
+    func_thread.start()
+    return func_thread
+
+def plot_resources(cpu, memory, disk, send_packets, recv_packets):
+    fig, axs = plt.subplots(5, 1, figsize=(12, 20))  # 5�~\�~]~X �~D~\�~L�~T~L롯 �~C~]�~D�
+
+    axs[0].plot(cpu, label='CPU Usage (%)')
+    axs[0].set_title('CPU Usage Over Time')
+    axs[0].set_ylabel('CPU Usage (%)')
+    axs[0].legend()
+    axs[0].grid(True)
+
+    axs[1].plot(memory, label='Memory Usage (%)')
+    axs[1].set_title('Memory Usage Over Time')
+    axs[1].set_ylabel('Memory Usage (%)')
+    axs[1].legend()
+    axs[1].grid(True)
+
+    axs[2].plot(disk, label='Disk Usage (%)')
+    axs[2].set_title('Disk Usage Over Time')
+    axs[2].set_ylabel('Disk Usage (%)')
+    axs[2].legend()
+    axs[2].grid(True)
+
+    axs[3].plot(send_packets, label='Packets Sent')
+    axs[3].set_title('Network Packets Sent Over Time')
+    axs[3].set_ylabel('Packets Sent')
+    axs[3].legend()
+    axs[3].grid(True)
+
+    axs[4].plot(recv_packets, label='Packets Received')
+    axs[4].set_title('Network Packets Received Over Time')
+    axs[4].set_ylabel('Packets Received')
+    axs[4].legend()
+    axs[4].grid(True)
+
+    plt.xlabel('Time (seconds)')
+    dt = datetime.datetime.now()
+    result = dt.strftime("%Y%m%d_%H%M%S")
+    path_name = f"resource_usage{result}.png"
+    plt.tight_layout()
+    plt.savefig(path_name)
+
 
 
 @app.get("/image_predict/{idxrange}")
 async def send_notification(idxrange: str):
-    start_idx, end_idx = [int(idx) for idx in idxrange.split("-")]
-    size = end_idx - start_idx
-    stime = time.time()
+    stop_event = threading.Event()
+    monitor_thread = threading.Thread(target=monitor_resources, args=(stop_event,))
+    monitor_thread.start()
     
-    for _ in range(size) :
-        if start_idx  > 9000 : 
-            start_idx = 0    
-        yolo.set_start_idx(start_idx)
-        yolo.set_end_idx(start_idx+1)
-        e, result = yolo.execute_yolo_predict()
-        start_idx += 1
-        if e is not None :
-            print(e)
-        
-    return {
-        "result" : time.time() - stime
+    stime = time.time()
+    func_thread = run_function_in_thread(image_predict_func, idxrange)
+    func_thread.join()
+    etime = time.time()
+
+    stop_event.set()
+    monitor_thread.join()
+    return{
+        "elapsed_time" : float(etime - stime),
+        "compute_time" : float(0)
     }
-
-
-
 
 
 if __name__ == "__main__":
