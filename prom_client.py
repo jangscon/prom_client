@@ -17,12 +17,52 @@ import datetime
 import psutil
 import matplotlib.pyplot as plt
 import threading
+import os
+from tqdm import tqdm
+
+from ultralytics import YOLO
+import torch
+from PIL import Image
+import numpy as np
+
+import scp_client 
+
+def get_image_list(input_path):
+        return [ f"{input_path}/{i}" for i in os.listdir(input_path)]
+
+# 데이터셋 예열
+def preload_images(image_paths, device='cuda'):
+    images = []
+    for path in tqdm(image_paths):
+        # 이미지를 로드하고 필요한 전처리를 수행
+        img = Image.open(path).convert('RGB')
+        img = img.resize((640, 640))  # YOLO 입력 크기에 맞게 조정
+        img = torch.from_numpy(np.array(img)).permute(2, 0, 1).unsqueeze(0).float() / 255.0
+        img = img.to(device)
+        images.append(img)
+    return images
+
+# 메인
+def warm_cache():
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    
+    image_paths = get_image_list(YOLO_INPUT_PATH)
+    
+    # 이미지 데이터셋을 메모리에 예열
+    preloaded_images = preload_images(image_paths, device=device)
+    print(f"{len(preloaded_images)} images loaded into memory.")
+
+    print("Model is warmed up and ready for inference.")
+
+warm_cache()
+
 
 cpu_usages = []
 memory_usages = []
 disk_usages = []
 network_send_packets = []
 network_recv_packets = []
+
 
 yolo = YOLOJob()
 yolo.set_input_path(YOLO_INPUT_PATH)
@@ -131,9 +171,8 @@ def monitor_resources(stop_event):
         network_send_packets.append(send_packets)
         network_recv_packets.append(recv_packets)
 
-        print(f"CPU: {cpu_usage}%, Memory: {memory_usage}%, Disk: {disk_usage}%, Packets Sent: {send_packets}, Packets Received: {recv_packets}")
-
-    print("Monitoring stopped.")
+        #print(f"CPU: {cpu_usage}%, Memory: {memory_usage}%, Disk: {disk_usage}%, Packets Sent: {send_packets}, Packets Received: {recv_packets}")
+    #print("Monitoring stopped.")
 
 def run_function_in_thread(function, *args, **kwargs):
     func_thread = threading.Thread(target=function, args=args, kwargs=kwargs)
@@ -196,6 +235,7 @@ async def send_notification(idxrange: str):
     stop_event.set()
     monitor_thread.join()
     plot_resources(cpu_usages, memory_usages, disk_usages, network_send_packets, network_recv_packets)
+    scp_client.send_file_to_remote()
     return{
         "elapsed_time" : float(etime - stime),
         "compute_time" : float(0)
