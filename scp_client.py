@@ -78,7 +78,7 @@ class SSHManager:
         stdin, stdout, stderr = self.ssh_client.exec_command(command)
         return stdout.readlines()
 
-def send_file_to_remote()
+def send_file_to_remote() :
     ssh_manager = SSHManager()
     ssh_manager.create_ssh_client(HOSTNAME, USERNAME, PASSWORD) 
     local_file_path = ssh_manager.send_file(LOCAL_PATH, REMOTE_PATH, MATCH_STRING) 
