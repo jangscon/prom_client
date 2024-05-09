@@ -82,4 +82,4 @@ with open("config.py","w") as f:
     f.write(f'IPERF3_IP = "155.230.36.27"\n')
     f.write(f'IPERF3_Port = 5201\n')
     f.write(f'PROCESS_IMAGE = {PROCESS_IMAGE}\n')
-    f.write(f'ISPLOT = {ISPLOT}}\n')
+    f.write(f'ISPLOT = {ISPLOT}\n')
