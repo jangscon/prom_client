@@ -1,4 +1,4 @@
-from config import YOLO_INPUT_PATH, YOLO_OUTPUT_PATH, FFMPEG_INPUT_PATH, FFMPEG_OUTPUT_PATH, IP, Port, IPERF3_IP, IPERF3_Port, PROCESS_IMAGE
+from config import YOLO_INPUT_PATH, YOLO_OUTPUT_PATH, FFMPEG_INPUT_PATH, FFMPEG_OUTPUT_PATH, IP, Port, IPERF3_IP, IPERF3_Port, PROCESS_IMAGE, ISPLOT
 #from yolo_image_predict import YOLOJob
 from yolo_image_predict import YOLOJob
 from ffmpeg_video_size_reduction import FFMpegJob
@@ -223,19 +223,29 @@ def plot_resources(cpu, memory, disk, send_packets, recv_packets):
 
 @app.get("/image_predict/{idxrange}")
 async def send_notification(idxrange: str):
-    stop_event = threading.Event()
-    monitor_thread = threading.Thread(target=monitor_resources, args=(stop_event,))
-    monitor_thread.start()
     
-    stime = time.time()
-    func_thread = run_function_in_thread(image_predict_func, idxrange)
-    func_thread.join()
-    etime = time.time()
+    stime = None
+    etime = None
 
-    stop_event.set()
-    monitor_thread.join()
-    plot_resources(cpu_usages, memory_usages, disk_usages, network_send_packets, network_recv_packets)
-    scp_client.send_file_to_remote()
+    if ISPLOT :
+        stop_event = threading.Event()
+        monitor_thread = threading.Thread(target=monitor_resources, args=(stop_event,))
+        monitor_thread.start()
+
+        stime = time.time()
+        func_thread = run_function_in_thread(image_predict_func, idxrange)
+        func_thread.join()
+        etime = time.time()
+
+        stop_event.set()
+        monitor_thread.join()
+        plot_resources(cpu_usages, memory_usages, disk_usages, network_send_packets, network_recv_packets)
+        scp_client.send_file_to_remote()
+    else :
+        stime = time.time()
+        image_predict_func(idxrange)
+        etime = time.time()
+        
     return{
         "elapsed_time" : float(etime - stime),
         "compute_time" : float(0)

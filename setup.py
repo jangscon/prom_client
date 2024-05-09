@@ -38,6 +38,9 @@ parser.add_argument("--ffmpeg_input_path", type=str, default="/ffmpeg_input")
 parser.add_argument("--ffmpeg_output_path", type=str, default="/ffmpeg_output")
 parser.add_argument("--port",type=int, default=8000)
 parser.add_argument("--process_img",type=int, default=200)
+parser.add_argument('--plotting', dest='isPlot', action='store_true')
+parser.add_argument('--no-plotting', dest='isPlot', action='store_false')
+parser.set_defaults(isPlot=False)
 
 args = parser.parse_args()
 
@@ -53,6 +56,7 @@ FFMPEG_INPUT_PATH = args.ffmpeg_input_path
 FFMPEG_OUTPUT_PATH = args.ffmpeg_output_path
 Port = args.port
 PROCESS_IMAGE = args.process_img
+ISPLOT = args.isPlot
 
 create_directory(YOLO_OUTPUT_PATH)
 create_directory(f"{YOLO_OUTPUT_PATH}/predict")
@@ -78,3 +82,4 @@ with open("config.py","w") as f:
     f.write(f'IPERF3_IP = "155.230.36.27"\n')
     f.write(f'IPERF3_Port = 5201\n')
     f.write(f'PROCESS_IMAGE = {PROCESS_IMAGE}\n')
+    f.write(f'ISPLOT = {ISPLOT}}\n')
