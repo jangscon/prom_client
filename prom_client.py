@@ -54,7 +54,7 @@ def warm_cache():
 
     print("Model is warmed up and ready for inference.")
 
-warm_cache()
+#warm_cache()
 
 
 cpu_usages = []
