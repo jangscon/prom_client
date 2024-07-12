@@ -62,7 +62,7 @@ memory_usages = []
 disk_usages = []
 network_send_packets = []
 network_recv_packets = []
-
+cpu_temps = []
 
 yolo = YOLOJob()
 yolo.set_input_path(YOLO_INPUT_PATH)
@@ -124,7 +124,8 @@ async def send_notification(idxrange: str):
     }
 
 def image_predict_func(idxrange) :
-    start_idx, end_idx = [int(idx) for idx in idxrange.split("-")]
+    start_idx, end_idx = [int(idx) 
+                          for idx in idxrange.split("-")]
     size = end_idx - start_idx
     compute_time = 0
 
@@ -157,6 +158,7 @@ def image_predict_func(idxrange) :
 def monitor_resources(stop_event):
     old_net_io = psutil.net_io_counters()
     while not stop_event.is_set():
+        cpu_temp = psutil.sensors_temperatures()['cpu_thermal'][0].current
         cpu_usage = psutil.cpu_percent(interval=1)
         memory_usage = psutil.virtual_memory().percent
         disk_usage = psutil.disk_usage('/').percent
@@ -165,6 +167,7 @@ def monitor_resources(stop_event):
         recv_packets = new_net_io.packets_recv - old_net_io.packets_recv
         old_net_io = new_net_io
 
+        cpu_temps.append(cpu_temp)
         cpu_usages.append(cpu_usage)
         memory_usages.append(memory_usage)
         disk_usages.append(disk_usage)
@@ -179,43 +182,66 @@ def run_function_in_thread(function, *args, **kwargs):
     func_thread.start()
     return func_thread
 
-def plot_resources(cpu, memory, disk, send_packets, recv_packets):
-    fig, axs = plt.subplots(5, 1, figsize=(12, 20))  # 5�~\�~]~X �~D~\�~L�~T~L롯 �~C~]�~D�
+def log_maker(cpu_temp, cpu, memory, logname="") :
+    dt = datetime.datetime.now()
+    result = dt.strftime("%Y%m%d_%H%M%S")
+    path_name = f"log_{logname}_{result}.txt"
 
-    axs[0].plot(cpu, label='CPU Usage (%)')
-    axs[0].set_title('CPU Usage Over Time')
-    axs[0].set_ylabel('CPU Usage (%)')
+    with open(path_name, "w") as f:
+        f.write("cpu_temp\n")
+        for i in cpu_temp :
+            f.write(f"{i}\n")
+        f.write("cpu\n")
+        for i in cpu :
+            f.write(f"{i}\n")
+        f.write("memory\n")
+        for i in memory :
+            f.write(f"{i}\n")
+
+
+def plot_resources(cpu_temp ,cpu, memory, disk, send_packets, recv_packets, plotname=""):
+    fig, axs = plt.subplots(6, 1, figsize=(12, 20))  
+
+    axs[0].plot(cpu_temp, label='CPU Temperatures (c)')
+    axs[0].set_title('CPU Temperatures')
+    axs[0].set_ylabel('CPU Temperatures')
     axs[0].legend()
     axs[0].grid(True)
 
-    axs[1].plot(memory, label='Memory Usage (%)')
-    axs[1].set_title('Memory Usage Over Time')
-    axs[1].set_ylabel('Memory Usage (%)')
+    axs[1].plot(cpu, label='CPU Usage (%)')
+    axs[1].set_title('CPU Usage Over Time')
+    axs[1].set_ylabel('CPU Usage (%)')
     axs[1].legend()
     axs[1].grid(True)
 
-    axs[2].plot(disk, label='Disk Usage (%)')
-    axs[2].set_title('Disk Usage Over Time')
-    axs[2].set_ylabel('Disk Usage (%)')
+    axs[2].plot(memory, label='Memory Usage (%)')
+    axs[2].set_title('Memory Usage Over Time')
+    axs[2].set_ylabel('Memory Usage (%)')
     axs[2].legend()
     axs[2].grid(True)
 
-    axs[3].plot(send_packets, label='Packets Sent')
-    axs[3].set_title('Network Packets Sent Over Time')
-    axs[3].set_ylabel('Packets Sent')
+    axs[3].plot(disk, label='Disk Usage (%)')
+    axs[3].set_title('Disk Usage Over Time')
+    axs[3].set_ylabel('Disk Usage (%)')
     axs[3].legend()
     axs[3].grid(True)
 
-    axs[4].plot(recv_packets, label='Packets Received')
-    axs[4].set_title('Network Packets Received Over Time')
-    axs[4].set_ylabel('Packets Received')
+    axs[4].plot(send_packets, label='Packets Sent')
+    axs[4].set_title('Network Packets Sent Over Time')
+    axs[4].set_ylabel('Packets Sent')
     axs[4].legend()
     axs[4].grid(True)
+
+    axs[5].plot(recv_packets, label='Packets Received')
+    axs[5].set_title('Network Packets Received Over Time')
+    axs[5].set_ylabel('Packets Received')
+    axs[5].legend()
+    axs[5].grid(True)
 
     plt.xlabel('Time (seconds)')
     dt = datetime.datetime.now()
     result = dt.strftime("%Y%m%d_%H%M%S")
-    path_name = f"resource_usage{result}.png"
+    path_name = f"resource_usage_{plotname}_{result}.png"
     plt.tight_layout()
     plt.savefig(path_name)
 
@@ -239,7 +265,7 @@ async def send_notification(idxrange: str):
 
         stop_event.set()
         monitor_thread.join()
-        plot_resources(cpu_usages, memory_usages, disk_usages, network_send_packets, network_recv_packets)
+        plot_resources(cpu_temps, cpu_usages, memory_usages, disk_usages, network_send_packets, network_recv_packets)
         scp_client.send_file_to_remote()
     else :
         stime = time.time()
@@ -250,6 +276,38 @@ async def send_notification(idxrange: str):
         "elapsed_time" : float(etime - stime),
         "compute_time" : float(0)
     }
+
+@app.get("/image_predict/{idxrange}/{savename}")
+async def send_notification(idxrange: str, savename: str):
+    
+    stime = None
+    etime = None
+
+    if ISPLOT :
+        stop_event = threading.Event()
+        monitor_thread = threading.Thread(target=monitor_resources, args=(stop_event,))
+        monitor_thread.start()
+
+        stime = time.time()
+        func_thread = run_function_in_thread(image_predict_func, idxrange)
+        func_thread.join()
+        etime = time.time()
+
+        stop_event.set()
+        monitor_thread.join()
+        plot_resources(cpu_temps, cpu_usages, memory_usages, disk_usages, network_send_packets, network_recv_packets, plotname=savename)
+        log_maker(cpu_temps, cpu_usages, memory_usages, logname=savename)
+        scp_client.send_file_to_remote()
+    else :
+        stime = time.time()
+        image_predict_func(idxrange)
+        etime = time.time()
+        
+    return{
+        "elapsed_time" : float(etime - stime),
+        "compute_time" : float(0)
+    }
+
 
 
 if __name__ == "__main__":

@@ -62,11 +62,11 @@ create_directory(YOLO_OUTPUT_PATH)
 create_directory(f"{YOLO_OUTPUT_PATH}/predict")
 create_directory(FFMPEG_OUTPUT_PATH)
 
-from computing_measure import get_available_ram, get_network_bandwidth
+# from computing_measure import get_available_ram, get_network_bandwidth
 
 
-bandwidth = get_network_bandwidth("155.230.36.27", 5202)
-mem = get_available_ram()
+# bandwidth = get_network_bandwidth("155.230.36.27", 5202)
+# mem = get_available_ram()
 
 
 
@@ -75,8 +75,8 @@ with open("config.py","w") as f:
     f.write(f'YOLO_OUTPUT_PATH = "{YOLO_OUTPUT_PATH}"\n')
     f.write(f'FFMPEG_INPUT_PATH = "{FFMPEG_INPUT_PATH}"\n')
     f.write(f'FFMPEG_OUTPUT_PATH = "{FFMPEG_OUTPUT_PATH}"\n')
-    f.write(f'BANDWIDTH = {bandwidth}\n')
-    f.write(f'MEM = {mem}\n')
+    f.write(f'BANDWIDTH = 1\n')
+    f.write(f'MEM = 1\n')
     f.write(f'IP = "{IP}"\n')
     f.write(f'Port = {Port}\n')
     f.write(f'IPERF3_IP = "155.230.36.27"\n')
