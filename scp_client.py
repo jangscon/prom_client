@@ -121,9 +121,10 @@ class SSHManager:
         stdin, stdout, stderr = self.ssh_client.exec_command(command)
         return stdout.readlines()
 
-def send_file_to_remote() :
+def send_file_to_remote(matchstring=None) :
     ssh_manager = SSHManager()
     ssh_manager.create_ssh_client(HOSTNAME, USERNAME, PASSWORD) 
-    local_file_path = ssh_manager.send_files(LOCAL_PATH, REMOTE_PATH, MATCH_STRING) 
+    matchstr = matchstring if not None else MATCH_STRING
+    local_file_path = ssh_manager.send_files(LOCAL_PATH, REMOTE_PATH, matchstr)
     delete_files(local_file_path)
     ssh_manager.close_ssh_client() 
