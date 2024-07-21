@@ -19,6 +19,9 @@ def create_directory(directory_path):
     else:
         print(f"디렉토리 이미 존재: {directory_path}")
 
+def get_current_directory():
+    return str(os.getcwd())
+
 install("prometheus-client")
 install("uvicorn")
 install("fastapi")
@@ -27,20 +30,29 @@ install("ffmpeg-python")
 install("iperf3")
 install("paramiko")
 install("scp")
+install('chromadb==0.5.0')
 
 subprocess.Popen(['sudo', 'apt-get', 'install', "iperf3"])
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--yolo_input_path", type=str, default="/yolo_input")
-parser.add_argument("--yolo_output_path", type=str, default="/yolo_output")
-parser.add_argument("--ffmpeg_input_path", type=str, default="/ffmpeg_input")
-parser.add_argument("--ffmpeg_output_path", type=str, default="/ffmpeg_output")
+parser.add_argument("--yolo_input_path", type=str, default=".")
+parser.add_argument("--yolo_output_path", type=str, default=".")
+parser.add_argument("--ffmpeg_input_path", type=str, default=".")
+parser.add_argument("--ffmpeg_output_path", type=str, default=".")
 parser.add_argument("--port",type=int, default=8000)
-parser.add_argument("--process_img",type=int, default=200)
+parser.add_argument("--process_img",type=int, default=100)
 parser.add_argument('--plotting', dest='isPlot', action='store_true')
 parser.add_argument('--no-plotting', dest='isPlot', action='store_false')
+parser.add_argument('--dest-', dest='isPlot', action='store_false')
 parser.set_defaults(isPlot=False)
+
+parser.add_argument("--db_path", type=str, default=get_current_directory())
+parser.add_argument("--dataset_path", type=str, default=".")
+parser.add_argument("--collection_name", type=str, default="lfw_faces")
+
+# mode : yolo, chromadb_query , chromadb_insert
+parser.add_argument("--mode", type=str, default="yolo")
 
 args = parser.parse_args()
 
@@ -57,10 +69,15 @@ FFMPEG_OUTPUT_PATH = args.ffmpeg_output_path
 Port = args.port
 PROCESS_IMAGE = args.process_img
 ISPLOT = args.isPlot
+DB_PATH = args.db_path
+DATASET_PATH = args.dataset_path
+COLLECTION_PATH = args.collection_name
+MODE = args.mode
 
-create_directory(YOLO_OUTPUT_PATH)
-create_directory(f"{YOLO_OUTPUT_PATH}/predict")
-create_directory(FFMPEG_OUTPUT_PATH)
+if MODE is "yolo":
+    create_directory(YOLO_OUTPUT_PATH)
+    create_directory(f"{YOLO_OUTPUT_PATH}/predict")
+    create_directory(FFMPEG_OUTPUT_PATH)
 
 # from computing_measure import get_available_ram, get_network_bandwidth
 
@@ -83,3 +100,7 @@ with open("config.py","w") as f:
     f.write(f'IPERF3_Port = 5201\n')
     f.write(f'PROCESS_IMAGE = {PROCESS_IMAGE}\n')
     f.write(f'ISPLOT = {ISPLOT}\n')
+    f.write(f'DB_PATH = {DB_PATH}\n')
+    f.write(f'DATASET_PATH = {DATASET_PATH}\n')
+    f.write(f'COLLECTION_PATH = {COLLECTION_PATH}\n')
+    f.write(f'MODE = {MODE}\n')

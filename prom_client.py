@@ -1,6 +1,6 @@
-from config import YOLO_INPUT_PATH, YOLO_OUTPUT_PATH, FFMPEG_INPUT_PATH, FFMPEG_OUTPUT_PATH, IP, Port, IPERF3_IP, IPERF3_Port, PROCESS_IMAGE, ISPLOT
-#from yolo_image_predict import YOLOJob
+from config import YOLO_INPUT_PATH, YOLO_OUTPUT_PATH, FFMPEG_INPUT_PATH, FFMPEG_OUTPUT_PATH, IP, Port, IPERF3_IP, IPERF3_Port, PROCESS_IMAGE, ISPLOT, MODE, DB_PATH, DATASET_PATH, COLLECTION_PATH
 from yolo_image_predict import YOLOJob
+from vectordb_image_search import ChromaJob
 from ffmpeg_video_size_reduction import FFMpegJob
 
 import uvicorn
@@ -68,6 +68,11 @@ yolo = YOLOJob()
 yolo.set_input_path(YOLO_INPUT_PATH)
 yolo.set_output_path(YOLO_OUTPUT_PATH)
 
+chroma = ChromaJob()
+chroma.set_db_path(DB_PATH)
+chroma.set_dataset_path(DATASET_PATH)
+chroma.set_collection_name(COLLECTION_PATH)
+
 total_output_image = 0
 
 mpeg = FFMpegJob()
@@ -122,6 +127,15 @@ async def send_notification(idxrange: str):
     return {
         "result" : result
     }
+
+def chroma_query_func(idxrange) :
+    n_results, iter_num = [int(idx) 
+                          for idx in idxrange.split("-")]
+    for _ in range(iter_num):
+        chroma.randomly_query(n_results)
+
+def chroma_insert_func() :
+    chroma.insert_dataset()
 
 def image_predict_func(idxrange) :
     start_idx, end_idx = [int(idx) 
@@ -283,25 +297,73 @@ async def send_notification(idxrange: str, savename: str):
     stime = None
     etime = None
 
-    if ISPLOT :
-        stop_event = threading.Event()
-        monitor_thread = threading.Thread(target=monitor_resources, args=(stop_event,))
-        monitor_thread.start()
+    if MODE is "yolo":
+        if ISPLOT :
+            stop_event = threading.Event()
+            monitor_thread = threading.Thread(target=monitor_resources, args=(stop_event,))
+            monitor_thread.start()
 
-        stime = time.time()
-        func_thread = run_function_in_thread(image_predict_func, idxrange)
-        func_thread.join()
-        etime = time.time()
+            stime = time.time()
+            func_thread = run_function_in_thread(image_predict_func, idxrange)
+            func_thread.join()
+            etime = time.time()
 
-        stop_event.set()
-        monitor_thread.join()
-        plot_resources(cpu_temps, cpu_usages, memory_usages, disk_usages, network_send_packets, network_recv_packets, plotname=savename)
-        log_maker(cpu_temps, cpu_usages, memory_usages, logname=savename)
-        scp_client.send_file_to_remote()
-    else :
-        stime = time.time()
-        image_predict_func(idxrange)
-        etime = time.time()
+            stop_event.set()
+            monitor_thread.join()
+            plot_resources(cpu_temps, cpu_usages, memory_usages, disk_usages, network_send_packets, network_recv_packets, plotname=savename)
+            log_maker(cpu_temps, cpu_usages, memory_usages, logname=savename)
+            scp_client.send_file_to_remote()
+        else :
+            stime = time.time()
+            image_predict_func(idxrange)
+            etime = time.time()
+
+    elif MODE is "chromadb_query":
+        chroma.clinet_on()
+        if ISPLOT :
+            stop_event = threading.Event()
+            monitor_thread = threading.Thread(target=monitor_resources, args=(stop_event,))
+            monitor_thread.start()
+
+            stime = time.time()
+            func_thread = run_function_in_thread(chroma_query_func, idxrange)
+            func_thread.join()
+            etime = time.time()
+
+            stop_event.set()
+            monitor_thread.join()
+            plot_resources(cpu_temps, cpu_usages, memory_usages, disk_usages, network_send_packets, network_recv_packets, plotname=savename)
+            log_maker(cpu_temps, cpu_usages, memory_usages, logname=savename)
+            scp_client.send_file_to_remote()
+
+        else :
+            stime = time.time()
+            chroma_query_func(idxrange)
+            etime = time.time()
+
+    elif MODE is "chromadb_insert":
+        chroma.clinet_on()
+        if ISPLOT :
+            stop_event = threading.Event()
+            monitor_thread = threading.Thread(target=monitor_resources, args=(stop_event,))
+            monitor_thread.start()
+
+            stime = time.time()
+            func_thread = run_function_in_thread(chroma_insert_func)
+            func_thread.join()
+            etime = time.time()
+
+            stop_event.set()
+            monitor_thread.join()
+            plot_resources(cpu_temps, cpu_usages, memory_usages, disk_usages, network_send_packets, network_recv_packets, plotname=savename)
+            log_maker(cpu_temps, cpu_usages, memory_usages, logname=savename)
+            scp_client.send_file_to_remote()
+
+        else :
+            stime = time.time()
+            chroma_insert_func()
+            etime = time.time()
+    else: pass
         
     return{
         "elapsed_time" : float(etime - stime),
