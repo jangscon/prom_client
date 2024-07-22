@@ -71,10 +71,10 @@ PROCESS_IMAGE = args.process_img
 ISPLOT = args.isPlot
 DB_PATH = args.db_path
 DATASET_PATH = args.dataset_path
-COLLECTION_PATH = args.collection_name
+COLLECTION_NAME = args.collection_name
 MODE = args.mode
 
-if MODE is "yolo":
+if MODE == "yolo":
     create_directory(YOLO_OUTPUT_PATH)
     create_directory(f"{YOLO_OUTPUT_PATH}/predict")
     create_directory(FFMPEG_OUTPUT_PATH)
@@ -100,7 +100,7 @@ with open("config.py","w") as f:
     f.write(f'IPERF3_Port = 5201\n')
     f.write(f'PROCESS_IMAGE = {PROCESS_IMAGE}\n')
     f.write(f'ISPLOT = {ISPLOT}\n')
-    f.write(f'DB_PATH = {DB_PATH}\n')
-    f.write(f'DATASET_PATH = {DATASET_PATH}\n')
-    f.write(f'COLLECTION_PATH = {COLLECTION_PATH}\n')
-    f.write(f'MODE = {MODE}\n')
+    f.write(f'DB_PATH = "{DB_PATH}"\n')
+    f.write(f'DATASET_PATH = "{DATASET_PATH}"\n')
+    f.write(f'COLLECTION_NAME = "{COLLECTION_NAME}"\n')
+    f.write(f'MODE = "{MODE}"\n')
