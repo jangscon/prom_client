@@ -129,10 +129,9 @@ async def send_notification(idxrange: str):
     }
 
 def chroma_query_func(idxrange) :
-    n_results, iter_num = [int(idx) 
+    start_idx, end_idx = [int(idx) 
                           for idx in idxrange.split("-")]
-    for _ in range(iter_num):
-        chroma.randomly_query(n_results)
+    chroma.randomly_query(end_idx - start_idx)
 
 def chroma_insert_func() :
     chroma.insert_dataset()
@@ -258,38 +257,6 @@ def plot_resources(cpu_temp ,cpu, memory, disk, send_packets, recv_packets, plot
     path_name = f"resource_usage_{plotname}_{result}.png"
     plt.tight_layout()
     plt.savefig(path_name)
-
-
-
-# @app.get("/image_predict/{idxrange}")
-# async def send_notification(idxrange: str):
-    
-#     stime = None
-#     etime = None
-
-#     if ISPLOT :
-#         stop_event = threading.Event()
-#         monitor_thread = threading.Thread(target=monitor_resources, args=(stop_event,))
-#         monitor_thread.start()
-
-#         stime = time.time()
-#         func_thread = run_function_in_thread(image_predict_func, idxrange)
-#         func_thread.join()
-#         etime = time.time()
-
-#         stop_event.set()
-#         monitor_thread.join()
-#         plot_resources(cpu_temps, cpu_usages, memory_usages, disk_usages, network_send_packets, network_recv_packets)
-#         scp_client.send_file_to_remote()
-#     else :
-#         stime = time.time()
-#         image_predict_func(idxrange)
-#         etime = time.time()
-        
-#     return{
-#         "elapsed_time" : float(etime - stime),
-#         "compute_time" : float(0)
-#     }
 
 
 @app.get("/image_predict/{idxrange}")
