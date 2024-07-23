@@ -36,8 +36,8 @@ subprocess.Popen(['sudo', 'apt-get', 'install', "iperf3"])
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--yolo_input_path", type=str, default=".")
-parser.add_argument("--yolo_output_path", type=str, default=".")
+parser.add_argument("--yolo_input_path", type=str, default="/uploads/images")
+parser.add_argument("--yolo_output_path", type=str, default="/uploads")
 parser.add_argument("--ffmpeg_input_path", type=str, default=".")
 parser.add_argument("--ffmpeg_output_path", type=str, default=".")
 parser.add_argument("--port",type=int, default=8000)
@@ -47,7 +47,7 @@ parser.add_argument('--no-plotting', dest='isPlot', action='store_false')
 parser.add_argument('--dest-', dest='isPlot', action='store_false')
 parser.set_defaults(isPlot=False)
 
-parser.add_argument("--db_path", type=str, default=get_current_directory())
+parser.add_argument("--db_path", type=str, default="/uploads")
 parser.add_argument("--dataset_path", type=str, default=".")
 parser.add_argument("--collection_name", type=str, default="lfw_faces")
 
