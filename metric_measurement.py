@@ -147,7 +147,7 @@ async def stop_measurement():
         measuring = False
         measure_thread.join()
         plot_resources(logfilename=log_file_name, plotfilename=plot_file_name)
-        scp_client.send_file_to_remote(matchstring=[log_file_name,plo_file_name])
+        scp_client.send_file_to_remote(matchstring=[log_file_name,plot_file_name])
         return JSONResponse(content={"status": "Measurement stopped and data saved"}, status_code=200)
     else:
         return JSONResponse(content={"status": "No measurement in progress"}, status_code=200)
