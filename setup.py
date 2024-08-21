@@ -30,7 +30,7 @@ install("ffmpeg-python")
 install("iperf3")
 install("paramiko")
 install("scp")
-install('chromadb==0.5.0')
+#install('chromadb==0.5.0')
 
 subprocess.Popen(['sudo', 'apt-get', 'install', "iperf3"])
 
@@ -41,7 +41,7 @@ parser.add_argument("--yolo_output_path", type=str, default="/uploads")
 parser.add_argument("--ffmpeg_input_path", type=str, default=".")
 parser.add_argument("--ffmpeg_output_path", type=str, default=".")
 parser.add_argument("--port",type=int, default=8000)
-parser.add_argument("--process_img",type=int, default=100)
+parser.add_argument("--process_img",type=int, default=1)
 parser.add_argument('--plotting', dest='isPlot', action='store_true')
 parser.add_argument('--no-plotting', dest='isPlot', action='store_false')
 parser.add_argument('--dest-', dest='isPlot', action='store_false')
@@ -74,10 +74,10 @@ DATASET_PATH = args.dataset_path
 COLLECTION_NAME = args.collection_name
 MODE = args.mode
 
-if MODE == "yolo":
-    create_directory(YOLO_OUTPUT_PATH)
-    create_directory(f"{YOLO_OUTPUT_PATH}/predict")
-    create_directory(FFMPEG_OUTPUT_PATH)
+# if MODE == "yolo":
+#     create_directory(YOLO_OUTPUT_PATH)
+#     create_directory(f"{YOLO_OUTPUT_PATH}/predict")
+#     create_directory(FFMPEG_OUTPUT_PATH)
 
 # from computing_measure import get_available_ram, get_network_bandwidth
 
